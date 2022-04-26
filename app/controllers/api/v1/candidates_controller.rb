@@ -15,12 +15,17 @@ class Api::V1::CandidatesController < ApplicationController
     end
   end
 
+  def new
+    @candidate = Candidate.new
+  end
+
   def create
     @candidate = Candidate.new(candidate_params)
+
     if @candidate.save
       render json: { status: 'SUCCESS', message: 'Saved candidate', data: @candidate }, status: :ok
     else
-      render json: { status: 'ERROR', message: "Candidate not saved", data: @candidate.errors },
+      render json: { status: 'ERROR', message: "Candidate not saved", data: :new },
              status: :unprocessable_entity
     end
   end

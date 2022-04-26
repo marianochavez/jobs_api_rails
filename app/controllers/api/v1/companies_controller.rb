@@ -15,12 +15,16 @@ class Api::V1::CompaniesController < ApplicationController
     end
   end
 
+  def new
+    @company = Company.new
+  end
+
   def create
-    company = Company.new(company_params)
-    if company.save
-      render json: { status: 'SUCCESS', message: 'Saved company', data: company }, status: :ok
+    @company = Company.new(company_params)
+    if @company.save
+      render json: { status: 'SUCCESS', message: 'Saved company', data: @company }, status: :ok
     else
-      render json: { status: 'ERROR', message: "Company not saved", data: company.errors }, status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Company not saved", data: @company.errors }, status: :unprocessable_entity
     end
   end
 
@@ -35,7 +39,7 @@ class Api::V1::CompaniesController < ApplicationController
 
   def destroy
     if @company.destroy
-      render json: { status: 'SUCCESS', message: "Deleted company", data: @company }, status: :unprocessable_entity
+      render json: { status: 'SUCCESS', message: "Deleted company", data: @company }, status: :ok
     else
       render json: { status: 'ERROR', message: "Company not deleted" }, status: :unprocessable_entity
     end
