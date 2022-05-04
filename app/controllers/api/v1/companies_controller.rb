@@ -1,30 +1,22 @@
 class Api::V1::CompaniesController < ApplicationController
 
-  before_action :find_company, only: [:show,:update,:destroy]
+  before_action :find_company, only: [:show, :update, :destroy]
 
   def index
-    @companies = Company.all.order('created_at DESC')
-    render json: { status: 'SUCCESS', message: 'Loaded companies', data: @companies }, status: :ok
+    @companies = Company.all
+    render status: :ok, json: { status: 'SUCCESS', message: 'Loaded companies', data: @companies }
   end
 
   def show
-    if @company
-      render json: { status: 'SUCCESS', message: 'Loaded company', data: @company }, status: :ok
-    else
-      render json: { status: 'ERROR', message: "Company not found" }, status: 404
-    end
-  end
-
-  def new
-    @company = Company.new
+    render json: { status: 'SUCCESS', message: 'Loaded company', data: @company }, status: :ok
   end
 
   def create
     @company = Company.new(company_params)
     if @company.save
-      render json: { status: 'SUCCESS', message: 'Saved company', data: @company }, status: :ok
+      render json: { status: 'SUCCESS', message: 'Saved company', data: @company }, status: :created
     else
-      render json: { status: 'ERROR', message: "Company not saved", data: @company.errors }, status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Company not saved", errors: @company.errors }, status: 400
     end
   end
 
@@ -32,8 +24,7 @@ class Api::V1::CompaniesController < ApplicationController
     if @company.update(company_params)
       render json: { status: 'SUCCESS', message: 'Updated company', data: @company }, status: :ok
     else
-      render json: { status: 'ERROR', message: "Company not updated", data: @company.errors },
-             status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Company not updated", errors: @company.errors }, status: 400
     end
   end
 
@@ -41,7 +32,7 @@ class Api::V1::CompaniesController < ApplicationController
     if @company.destroy
       render json: { status: 'SUCCESS', message: "Deleted company", data: @company }, status: :ok
     else
-      render json: { status: 'ERROR', message: "Company not deleted" }, status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Company not deleted", errors: @company.errors}, status: 400
     end
 
   end
@@ -54,6 +45,9 @@ class Api::V1::CompaniesController < ApplicationController
 
   def find_company
     @company = Company.find(params[:id])
+    if !@company
+      render json: { status: 'ERROR', message: "Company not found" }, status: 404
+    end
   end
 
 end

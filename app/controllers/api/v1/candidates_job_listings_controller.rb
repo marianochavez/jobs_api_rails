@@ -1,53 +1,56 @@
 class Api::V1::CandidatesJobListingsController < ApplicationController
+
+  before_action :find_candidate_job_listing, only: [:show, :update, :destroy]
+
   def index
-    @candidate_job_listing = CandidatesJobListing.all
-    render json: { message: "Loaded all Job Listing of Candidate", data: @candidate_job_listing }
+    @candidate_job_listings = CandidateJobListing.all
+    render json: { message: "Loaded all candidates - Job_listing ", data: @candidate_job_listings }, status: :ok
   end
 
-  # TODO: me anula la primary key el modelo
   def show
-    @candidate_job_listing = CandidatesJobListing.find(params[:id])
-    if @candidate_job_listing
-      render json: { message: "A Job Listing with that id was not found" }
-    else
-      render json: { message: "Loaded Job Listing by id of Candidate", data: @candidate_job_listing }
-    end
-
-  end
-
-  def new
-    @candidate = Candidate.find(params[:candidate_id])
-    @candidate_job_listing = @candidate.job_listings.new
+    render json: { status: "SUCCESS", message: "Loaded candidate job_listing", data: @candidate_job_listing },status: :ok
   end
 
   def create
-    @candidate = Candidate.find(params[:candidate_id])
-    @candidate_job_listing = CandidatesJobListing.new(candidate_job_listing_params)
+    @candidate = Candidate.find_by(id: params[:candidate_id])
+    @candidate_job_listing = @candidate.candidate_job_listings.new(candidate_job_listing_params)
     if @candidate_job_listing.save
-      render json: { status: "SUCCESS", message: "create relation candidate - job_listing", data: @candidate_job_listing }
-    end
-  end
-
-  # TODO: Not working
-  def update
-    @candidate_job_listing = CandidatesJobListing.where(candidate_id: params[:candidate_id], job_listing_id: params[:id])
-    if @candidate_job_listing.update(candidate_id: params[:candidate_id], job_listing_id: params[:job_listing_id])
-      render json: { status: "SUCCESS", message: "Updated candidate - job_listing", data: @candidate_job_listing }
+      render json: { status: "SUCCESS", message: "Created candidate job_listing", data: @candidate_job_listing },
+             status: :created
     else
-      render json: { message: "Updated error", data: @candidate_job_listing }
+      render json: { status: "ERROR", message: "Candidate job_listing not created", errors: @candidate_job_listing.errors },
+             status: 400
     end
   end
 
-  #TODO: le falta el ID para eliminar
+  def update
+    if @candidate_job_listing.update(candidate_job_listing_params)
+      render json: { status: "SUCCESS", message: "Updated candidate job_listing", data: @candidate_job_listing },
+             status: :ok
+    else
+      render json: { message: "Candidate job_listing not updated", errors: @candidate_job_listing.errors }, status: 400
+    end
+  end
+
   def destroy
-    @candidate_job_listing = CandidatesJobListing.where(id: params[:id])
-    @candidate_job_listing.destroy
-    render json: { status: "SUCCESS", message: "Deleted candidate - job_listing", data: @candidate_job_listing }
+    if @candidate_job_listing.destroy
+      render json: { status: "SUCCESS", message: "Deleted candidate job_listing", data: @candidate_job_listing }
+    else
+      render json: { message: "Candidate job_listing not deleted", errors: @candidate_job_listing.errors }, status: 400
+    end
+
   end
 
   private
 
   def candidate_job_listing_params
-    params.require(:candidates_job_listing).permit(:candidate_id, :job_listing_id)
+    params.require(:candidates_job_listing).permit(:candidate_id, :job_listing_id, :status)
+  end
+
+  def find_candidate_job_listing
+    @candidate_job_listing = CandidateJobListing.find_by(id: params[:id])
+    if !@candidate_job_listing
+      render json: {status: "ERROR", message: "A candidate job listing with that id was not found"}, status: 404
+    end
   end
 end

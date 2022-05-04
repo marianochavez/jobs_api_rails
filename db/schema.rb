@@ -14,18 +14,21 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_26_191305) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  create_table "candidate_job_listings", force: :cascade do |t|
+    t.bigint "candidate_id"
+    t.bigint "job_listing_id"
+    t.integer "state", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["candidate_id"], name: "index_candidate_job_listings_on_candidate_id"
+    t.index ["job_listing_id"], name: "index_candidate_job_listings_on_job_listing_id"
+  end
+
   create_table "candidates", force: :cascade do |t|
     t.string "name"
     t.string "lastname"
     t.string "email"
     t.string "phone"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  create_table "candidates_job_listings", id: false, force: :cascade do |t|
-    t.bigint "candidate_id", null: false
-    t.bigint "job_listing_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -40,15 +43,14 @@ ActiveRecord::Schema[7.0].define(version: 2022_04_26_191305) do
   end
 
   create_table "job_listings", force: :cascade do |t|
+    t.bigint "company_id"
     t.string "title"
     t.text "description"
     t.date "start_date"
     t.string "duration"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "company_id", null: false
     t.index ["company_id"], name: "index_job_listings_on_company_id"
   end
 
-  add_foreign_key "job_listings", "companies"
 end

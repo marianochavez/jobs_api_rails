@@ -3,30 +3,20 @@ class Api::V1::CandidatesController < ApplicationController
   before_action :find_candidate, only: [:show, :update, :destroy]
 
   def index
-    @candidates = Candidate.all.order('created_at DESC')
+    @candidates = Candidate.all
     render json: { status: 'SUCCESS', message: 'Loaded candidates', data: @candidates }, status: :ok
   end
 
   def show
-    if @candidate
-      render json: { status: 'SUCCESS', message: 'Loaded candidate', data: @candidate }, status: :ok
-    else
-      render json: { status: 'ERROR', message: "Candidate not found" }, status: 404
-    end
-  end
-
-  def new
-    @candidate = Candidate.new
+    render json: { status: 'SUCCESS', message: 'Loaded candidate', data: @candidate }, status: :ok
   end
 
   def create
     @candidate = Candidate.new(candidate_params)
-
     if @candidate.save
-      render json: { status: 'SUCCESS', message: 'Saved candidate', data: @candidate }, status: :ok
+      render json: { status: 'SUCCESS', message: 'Saved candidate', data: @candidate }, status: :created
     else
-      render json: { status: 'ERROR', message: "Candidate not saved", data: :new },
-             status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Candidate not saved", errors: @candidate.errors }, status: 400
     end
   end
 
@@ -34,8 +24,7 @@ class Api::V1::CandidatesController < ApplicationController
     if @candidate.update(company_params)
       render json: { status: 'SUCCESS', message: 'Updated candidate', data: @candidate }, status: :ok
     else
-      render json: { status: 'ERROR', message: "Candidate not updated", data: @candidate.errors },
-             status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Candidate not updated", errors: @candidate.errors }, status: 400
     end
   end
 
@@ -43,7 +32,7 @@ class Api::V1::CandidatesController < ApplicationController
     if @candidate.destroy
       render json: { status: 'SUCCESS', message: "Deleted candidate", data: @candidate }, status: :unprocessable_entity
     else
-      render json: { status: 'ERROR', message: "Candidate not deleted" }, status: :unprocessable_entity
+      render json: { status: 'ERROR', message: "Candidate not deleted", errors: @candidate.errors }, status: 400
     end
 
   end
@@ -56,6 +45,9 @@ class Api::V1::CandidatesController < ApplicationController
 
   def find_candidate
     @candidate = Candidate.find(params[:id])
+    if !@candidate
+      render json: { status: 'ERROR', message: "Candidate not found" }, status: 404
+    end
   end
 
 end
