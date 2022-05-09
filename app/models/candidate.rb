@@ -7,4 +7,11 @@ class Candidate < ApplicationRecord
   validates :lastname, presence: true, length: { minimum: 3, maximum: 10 }
   validates :email, presence: true
   validates :phone, presence: true, length: { minimum: 5, maximum: 30 }
+  validates :token, uniqueness: true
+
+  before_create :set_token
+
+  def set_token
+    self.token = SecureRandom.uuid
+  end
 end

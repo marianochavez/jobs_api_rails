@@ -1,6 +1,7 @@
 class Api::V1::CandidatesController < ApplicationController
 
-  before_action :find_candidate, only: [:show, :update, :destroy]
+  before_action :set_candidate, only: [:show, :update, :destroy]
+  before_action :check_token, only: [:update, :destroy]
 
   def index
     @candidates = Candidate.all
@@ -21,7 +22,7 @@ class Api::V1::CandidatesController < ApplicationController
   end
 
   def update
-    if @candidate.update(company_params)
+    if @candidate.update(candidate_params)
       render json: { status: 'SUCCESS', message: 'Updated candidate', data: @candidate }, status: :ok
     else
       render json: { status: 'ERROR', message: "Candidate not updated", errors: @candidate.errors }, status: 400
@@ -43,11 +44,19 @@ class Api::V1::CandidatesController < ApplicationController
     params.require(:candidate).permit([:name, :lastname, :email, :phone])
   end
 
-  def find_candidate
-    @candidate = Candidate.find(params[:id])
-    if !@candidate
-      render json: { status: 'ERROR', message: "Candidate not found" }, status: 404
-    end
+  def set_candidate
+    @candidate = Candidate.find_by(id: params[:id])
+    return if @candidate.present?
+
+    render json: { status: 'ERROR', message: "Candidate not found" }, status: 404
+    false
+  end
+
+  def check_token
+    return if request.headers['Authorization'] == "Bearer #{@candidate.token}"
+
+    render json: { status: 'ERROR', message: "Unauthorized" }, status: 401
+    false
   end
 
 end

@@ -1,24 +1,10 @@
-# README
+## Ejercicio: Construye una bolsa de trabajo
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Diseñar una API con Ruby on Rails para una bolsa de trabajo. Para la misma debe de implementar, las siguientes funcionalidades:
 
-Things you may want to cover:
+- Registarse como compañía o candidato.
+- Las compañias pueden publicar un aviso de trabajo.
+- Los candidatos pueden aplicar a ese trabajo.
+- Administrar candidatos para los trabajos seleccionados: Interesa, Rechazado,Contratado.
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Tienes que definir una API (JSON) que proporcione, en tu opinión, la forma más conveniente de realizar tales acciones.

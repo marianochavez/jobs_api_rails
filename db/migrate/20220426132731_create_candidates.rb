@@ -5,7 +5,7 @@ class CreateCandidates < ActiveRecord::Migration[7.0]
       t.string :lastname
       t.string :email
       t.string :phone
-
+      t.string :token
       t.timestamps
     end
   end

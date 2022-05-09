@@ -1,6 +1,8 @@
 class Api::V1::CandidatesJobListingsController < ApplicationController
 
-  before_action :find_candidate_job_listing, only: [:show, :update, :destroy]
+  before_action :set_candidate_job_listing, only: [:show, :update]
+  before_action :check_token, only: [:update]
+  before_action :check_state, only: [:update]
 
   def index
     @candidate_job_listings = CandidateJobListing.all
@@ -8,49 +10,43 @@ class Api::V1::CandidatesJobListingsController < ApplicationController
   end
 
   def show
-    render json: { status: "SUCCESS", message: "Loaded candidate job_listing", data: @candidate_job_listing },status: :ok
-  end
-
-  def create
-    @candidate = Candidate.find_by(id: params[:candidate_id])
-    @candidate_job_listing = @candidate.candidate_job_listings.new(candidate_job_listing_params)
-    if @candidate_job_listing.save
-      render json: { status: "SUCCESS", message: "Created candidate job_listing", data: @candidate_job_listing },
-             status: :created
-    else
-      render json: { status: "ERROR", message: "Candidate job_listing not created", errors: @candidate_job_listing.errors },
-             status: 400
-    end
+    render json: { status: "SUCCESS", message: "Loaded candidate job_listing", data: @candidate_job_listing }, status: :ok
   end
 
   def update
     if @candidate_job_listing.update(candidate_job_listing_params)
-      render json: { status: "SUCCESS", message: "Updated candidate job_listing", data: @candidate_job_listing },
-             status: :ok
+      render json: { status: 'SUCCESS', message: 'Updated candidate job listing status', data: @candidate_job_listing }, status: :ok
     else
-      render json: { message: "Candidate job_listing not updated", errors: @candidate_job_listing.errors }, status: 400
+      render json: { status: 'ERROR', message: 'Candidate job listing status not updated', errors: @candidate_job_listing.errors }, status: 400
     end
-  end
-
-  def destroy
-    if @candidate_job_listing.destroy
-      render json: { status: "SUCCESS", message: "Deleted candidate job_listing", data: @candidate_job_listing }
-    else
-      render json: { message: "Candidate job_listing not deleted", errors: @candidate_job_listing.errors }, status: 400
-    end
-
   end
 
   private
 
   def candidate_job_listing_params
-    params.require(:candidates_job_listing).permit(:candidate_id, :job_listing_id, :status)
+    params.require(:candidates_job_listing).permit(:state)
   end
 
-  def find_candidate_job_listing
+  def set_candidate_job_listing
     @candidate_job_listing = CandidateJobListing.find_by(id: params[:id])
-    if !@candidate_job_listing
-      render json: {status: "ERROR", message: "A candidate job listing with that id was not found"}, status: 404
-    end
+    return if @candidate_job_listing.present?
+
+    render json: { status: "ERROR", message: "A candidate job listing with that id was not found" }, status: 404
+    false
+  end
+
+  def check_token
+    @company = Company.find_by(id: params[:company_id])
+    return if request.headers['Authorization'] == "Bearer #{@company.token}"
+
+    render json: { status: 'ERROR', message: "Unauthorized" }, status: 401
+    false
+  end
+
+  def check_state
+    return if CandidateJobListing.states.values.include?(params[:state]) || CandidateJobListing.states.keys.include?(params[:state])
+
+    render json: { status: 'ERROR', message: 'Invalid state', valid_states: CandidateJobListing.states }, status: 400
+    false
   end
 end

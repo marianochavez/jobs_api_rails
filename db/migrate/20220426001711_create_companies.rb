@@ -5,7 +5,7 @@ class CreateCompanies < ActiveRecord::Migration[7.0]
       t.string :description
       t.string :address
       t.string :phone
-
+      t.string :token
       t.timestamps
     end
   end
