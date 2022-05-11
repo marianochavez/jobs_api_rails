@@ -2,6 +2,7 @@ class Api::V1::CandidatesJobListingsController < ApplicationController
 
   before_action :set_candidate_job_listing, only: [:show, :update]
   before_action :check_token, only: [:update]
+  before_action :check_company_job_listing, only: [:update]
   before_action :check_state, only: [:update]
 
   def index
@@ -13,6 +14,7 @@ class Api::V1::CandidatesJobListingsController < ApplicationController
     render json: { status: "SUCCESS", message: "Loaded candidate job_listing", data: @candidate_job_listing }, status: :ok
   end
 
+  #TODO el job listing debe pertenecer a la company q modifica
   def update
     if @candidate_job_listing.update(candidate_job_listing_params)
       render json: { status: 'SUCCESS', message: 'Updated candidate job listing status', data: @candidate_job_listing }, status: :ok
@@ -47,6 +49,13 @@ class Api::V1::CandidatesJobListingsController < ApplicationController
     return if CandidateJobListing.states.values.include?(params[:state]) || CandidateJobListing.states.keys.include?(params[:state])
 
     render json: { status: 'ERROR', message: 'Invalid state', valid_states: CandidateJobListing.states }, status: 400
+    false
+  end
+
+  def check_company_job_listing
+    return if @company.id == @candidate_job_listing.job_listing.company_id
+
+    render json: { status: 'ERROR', message: 'Unauthorized' }, status: 401
     false
   end
 end
